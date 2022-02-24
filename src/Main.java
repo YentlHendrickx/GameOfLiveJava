@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Timer;
@@ -28,9 +30,9 @@ public class Main {
     public static int gridPixels = 10;
 
     // Window size
-    public static int windowWidthPixels = 900;
+    public static int windowWidthPixels = 850;
     public static int windowHeightPixels = 900;
-    public static boolean forceWindowSquare = true;
+    public static boolean forceWindowSquare = false;
     public static int gridXOffset = 20;
     public static int gridYOffset = 20;
 
@@ -41,7 +43,13 @@ public class Main {
     public static Cell[][] nextGenCells;
 
     public static JFrame frame;
+    public static JButton simulateButton;
     public static Grid grid;
+
+    public static Thread simulationThread;
+    public static boolean repainted = true;
+
+    public static boolean simRunning = false;
 
     public static void main(String[] args) {
         /// WINDOW MANAGING
@@ -63,12 +71,29 @@ public class Main {
         grid = new Grid(gridSize, gridPixels, gridXOffset, gridYOffset);
         frame.setBounds(0, 0, (windowWidthPixels), (windowHeightPixels));
 
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
-        frame.setBackground(Color.GRAY);
+        JPanel buttonPanel = new JPanel();
+        grid.setBackground(Color.GRAY);
+        buttonPanel.setBackground(Color.GRAY);
+        simulateButton = new JButton("Resume simulation");
+        JButton stepButton = new JButton("Step");
+        JButton clearButton = new JButton("Clear");
+        buttonPanel.add(simulateButton);
+        buttonPanel.add(stepButton);
+        buttonPanel.add(clearButton);
+
+        grid.setPreferredSize(new Dimension(gridSize*gridPixels, (gridSize*gridPixels) + gridYOffset));
+        buttonPanel.setPreferredSize(new Dimension(35,10));
+        container.add(grid);
+        container.add(buttonPanel);
+        container.setBackground(Color.GRAY);
+
         frame.setResizable(false);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(grid);
+        frame.add(container);
 
         // Calculate exact bounds
         int frameX = frame.getContentPane().getSize().width;
@@ -84,17 +109,72 @@ public class Main {
 
         frame.setBounds(0, 0, newFrameX, newFrameY);
 
-        System.out.println(frame.getContentPane().getSize());
-        System.out.println(frame.getWidth());
+//        System.out.println(frame.getContentPane().getSize());
+//        System.out.println(frame.getWidth());
         // Add mouse listener to frame
         frame.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                if (SwingUtilities.isLeftMouseButton(e)) {
-                    handleClick(e.getX(), e.getY());
+                if (!simRunning) {
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        handleClick(e.getX(), e.getY());
+                    }
+                }
+            }
+        });
+
+        simulateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                simRunning = !simRunning;
+                if (simRunning) {
+                    simulateButton.setText("Pause simulation");
+                    simulationThread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                while (simRunning) {
+                                    if (repainted) {
+                                        repainted = false;
+                                        updateCells();
+                                    }
+                                    Thread.sleep(250);
+//                                    System.out.println("FALSE");
+
+                                }
+                            } catch (InterruptedException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+                    simulationThread.start();
                 } else {
+                    simulateButton.setText("Resume simulation");
+                }
+            }
+        });
+
+        stepButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!simRunning) {
                     updateCells();
                 }
+            }
+        });
 
+        clearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                simRunning = false;
+                simulateButton.setText("Resume simulation");
+
+                for (int i = 0; i < gridSize; i++) {
+                    for (int j = 0; j < gridSize; j++) {
+                        cells[i][j].setState(false);
+                        nextGenCells[i][j].setState(false);
+                    }
+                }
+                updateCells();
             }
         });
 
@@ -111,7 +191,6 @@ public class Main {
                 nextGenCells[x][y] = new Cell(startX, startY, x, y);
             }
         }
-
 
         redraw(0, 0, true);
     }
@@ -152,7 +231,9 @@ public class Main {
         } else {
             grid.setCells(cells);
             grid.repaint();
+            simulateButton.repaint();
         }
+        repainted = true;
     }
 
     // Handle mouse clicks (toggling)
@@ -164,7 +245,7 @@ public class Main {
         // Y offset is top bar + little bar at the bottom (same as x)
         y -= windowYActualDiff - (windowXActualDiff / 2);
 
-        System.out.println(x);
+//        System.out.println(x);
 
         int arrayX = -1;
         int arrayY = -1;

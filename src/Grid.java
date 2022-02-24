@@ -23,8 +23,10 @@ public class Grid extends JPanel {
     }
 
     public void paint(Graphics g) {
+
         // Draw background
         if (this.cells[0][0] != null) {
+            super.paintComponent(g);
             g.setColor(Color.BLACK);
             g.fillRect(xOffset, yOffset, (gridPixels * gridSize) + 1, (gridPixels * gridSize) + 1);
 
