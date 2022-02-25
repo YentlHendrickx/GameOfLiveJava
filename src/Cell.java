@@ -1,28 +1,21 @@
 public class Cell {
     public boolean state;
-    public int x, y;
-    public int xArray, yArray;
+    public int x, y, xArray, yArray;
 
-    public Cell() {
-        this.state = false;
+    public Cell(int x, int y, int xArray, int yArray) {
+        this.x = x; this.y = y; this.state = false; this.xArray = xArray; this.yArray = yArray;
     }
-
-    public Cell(int x, int y, int xArray, int yArray) {this.x = x; this.y = y; this.state = false; this.xArray = xArray; this.yArray = yArray;}
-    public Cell(boolean state) {
-        this.state = state;
-    }
-
 
     public void setState(boolean state) {
         this.state = state;
     }
+
     public boolean getState() {
         return this.state;
     }
+
     public int getX() {return this.x;}
     public int getY() {return this.y;}
-    public void setX(int x) {this.x = x;}
-    public void setY(int y) {this.y = y;}
 
     public int getLiveCellCount(Cell[][] cells, int gridSize) {
         int liveNeighbours = 0;

@@ -3,10 +3,7 @@ import java.awt.*;
 
 public class Grid extends JPanel {
 
-    public int gridSize;
-    public int gridPixels;
-    public int xOffset;
-    public int yOffset;
+    public int gridSize, gridPixels, xOffset, yOffset;
     public Cell[][] cells;
 
     public Grid(int gridSize, int gridPixels, int xOffset, int yOffset) {
@@ -18,12 +15,10 @@ public class Grid extends JPanel {
     }
 
     public void setCells(Cell[][] cells) {
-//        this.cells = new Cell[gridSize][gridSize];
         this.cells = cells;
     }
 
     public void paint(Graphics g) {
-
         // Draw background
         if (this.cells[0][0] != null) {
             super.paintComponent(g);
@@ -56,5 +51,4 @@ public class Grid extends JPanel {
 
         g.fillRect((target.getX()) + offsetX + 1, (target.getY()) + offsetY + 1 , gridPixels -1, gridPixels-1);
     }
-
 }

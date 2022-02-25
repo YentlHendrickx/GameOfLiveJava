@@ -68,24 +68,30 @@ public class Main {
 
         // Start window setup
         frame = new JFrame();
-        grid = new Grid(gridSize, gridPixels, gridXOffset, gridYOffset);
         frame.setBounds(0, 0, (windowWidthPixels), (windowHeightPixels));
 
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-
-        JPanel buttonPanel = new JPanel();
+        // Grid
+        grid = new Grid(gridSize, gridPixels, gridXOffset, gridYOffset);
         grid.setBackground(Color.GRAY);
-        buttonPanel.setBackground(Color.GRAY);
+        grid.setPreferredSize(new Dimension(gridSize*gridPixels, (gridSize*gridPixels) + gridYOffset));
+
+        // Buttons
         simulateButton = new JButton("Resume simulation");
         JButton stepButton = new JButton("Step");
         JButton clearButton = new JButton("Clear");
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(Color.GRAY);
         buttonPanel.add(simulateButton);
         buttonPanel.add(stepButton);
         buttonPanel.add(clearButton);
-
-        grid.setPreferredSize(new Dimension(gridSize*gridPixels, (gridSize*gridPixels) + gridYOffset));
         buttonPanel.setPreferredSize(new Dimension(35,10));
+
+        // create container
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+
+        // Add components
         container.add(grid);
         container.add(buttonPanel);
         container.setBackground(Color.GRAY);
@@ -107,10 +113,9 @@ public class Main {
         int newFrameX = windowX + windowXActualDiff;
         int newFrameY = windowY + windowYActualDiff;
 
+        // Set bounds so actual frame is size wanted
         frame.setBounds(0, 0, newFrameX, newFrameY);
 
-//        System.out.println(frame.getContentPane().getSize());
-//        System.out.println(frame.getWidth());
         // Add mouse listener to frame
         frame.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -137,9 +142,9 @@ public class Main {
                                         repainted = false;
                                         updateCells();
                                     }
-                                    Thread.sleep(250);
-//                                    System.out.println("FALSE");
 
+                                    // TODO: Replace thread sleep for Timers
+                                    Thread.sleep(250);
                                 }
                             } catch (InterruptedException ex) {
                                 ex.printStackTrace();
@@ -153,6 +158,7 @@ public class Main {
             }
         });
 
+        // Step forward in simulation
         stepButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -162,6 +168,7 @@ public class Main {
             }
         });
 
+        // Clear canvas
         clearButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -191,7 +198,6 @@ public class Main {
                 nextGenCells[x][y] = new Cell(startX, startY, x, y);
             }
         }
-
         redraw(0, 0, true);
     }
 
@@ -222,7 +228,6 @@ public class Main {
         }
 
         redraw(0,0,true);
-
     }
 
     public static void redraw(int cellXX, int cellYY, boolean all) {
@@ -245,11 +250,10 @@ public class Main {
         // Y offset is top bar + little bar at the bottom (same as x)
         y -= windowYActualDiff - (windowXActualDiff / 2);
 
-//        System.out.println(x);
-
         int arrayX = -1;
         int arrayY = -1;
 
+        // Get index of cells using gridPixels reduction
         for (int xT = x; xT > gridXOffset; xT -= gridPixels) {
             arrayX++;
         }
